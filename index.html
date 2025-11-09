@@ -1,0 +1,1006 @@
+<!DOCTYPE html>
+<html lang="bn">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width,initial-scale=1" />
+<title>MC Chat bot Pro</title>
+<style>
+  :root {
+    --bg: #f6f7fb;
+    --bot: #ffffff;
+    --user: #0b84ff;
+    --header: #183b56;
+    --text: #333333;
+    --shadow: rgba(0,0,0,0.1);
+    --success: #1f7a3b;
+    --warning: #f39c12;
+    --error: #e74c3c;
+    --typing: #3498db;
+  }
+  
+  /* ডার্ক মোড ভেরিয়েবল */
+  @media (prefers-color-scheme: dark) {
+    :root {
+      --bg: #1a1a1a;
+      --bot: #2d3748;
+      --user: #2563eb;
+      --header: #0f172a;
+      --text: #e2e8f0;
+      --shadow: rgba(0,0,0,0.3);
+    }
+  }
+
+  [data-theme="dark"] {
+    --bg: #1a1a1a;
+    --bot: #2d3748;
+    --user: #2563eb;
+    --header: #0f172a;
+    --text: #e2e8f0;
+    --shadow: rgba(0,0,0,0.3);
+  }
+
+  [data-theme="light"] {
+    --bg: #f6f7fb;
+    --bot: #ffffff;
+    --user: #0b84ff;
+    --header: #183b56;
+    --text: #333333;
+    --shadow: rgba(0,0,0,0.1);
+  }
+
+  body {
+    margin: 0;
+    font-family: system-ui, -apple-system, Segoe UI, Roboto, "Noto Sans", sans-serif;
+    background: var(--bg);
+    color: var(--text);
+    display: flex;
+    flex-direction: column;
+    height: 100vh;
+    transition: background 0.3s, color 0.3s;
+  }
+
+  header {
+    background: var(--header);
+    color: #fff;
+    padding: 14px;
+    text-align: center;
+    font-weight: 700;
+    font-size: 20px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    box-shadow: 0 2px 4px var(--shadow);
+  }
+
+  .header-controls {
+    display: flex;
+    gap: 10px;
+  }
+
+  .theme-toggle, .clear-chat {
+    background: rgba(255,255,255,0.2);
+    border: none;
+    color: white;
+    padding: 6px 10px;
+    border-radius: 6px;
+    cursor: pointer;
+    font-size: 14px;
+  }
+
+  #chat {
+    flex: 1;
+    overflow: auto;
+    padding: 14px;
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+    scroll-behavior: smooth;
+  }
+
+  .msg {
+    max-width: 82%;
+    padding: 12px 16px;
+    border-radius: 18px;
+    word-wrap: break-word;
+    animation: fadeIn 0.3s ease-in;
+    box-shadow: 0 2px 4px var(--shadow);
+    line-height: 1.4;
+  }
+
+  @keyframes fadeIn {
+    from { opacity: 0; transform: translateY(10px); }
+    to { opacity: 1; transform: translateY(0); }
+  }
+
+  .bot {
+    align-self: flex-start;
+    background: var(--bot);
+    color: var(--text);
+    border-bottom-left-radius: 4px;
+  }
+
+  .user {
+    align-self: flex-end;
+    background: var(--user);
+    color: #fff;
+    border-bottom-right-radius: 4px;
+  }
+
+  .msg-time {
+    font-size: 11px;
+    opacity: 0.7;
+    margin-top: 5px;
+    text-align: right;
+  }
+
+  #bar {
+    display: flex;
+    gap: 8px;
+    padding: 12px;
+    background: var(--bot);
+    align-items: center;
+    border-top: 1px solid var(--shadow);
+  }
+
+  #text {
+    flex: 1;
+    padding: 12px 16px;
+    border-radius: 24px;
+    border: 1px solid #ddd;
+    font-size: 16px;
+    background: var(--bg);
+    color: var(--text);
+    transition: border 0.3s;
+  }
+
+  #text:focus {
+    outline: none;
+    border-color: var(--user);
+    box-shadow: 0 0 0 2px rgba(11, 132, 255, 0.2);
+  }
+
+  button {
+    padding: 10px 14px;
+    border-radius: 50%;
+    border: none;
+    cursor: pointer;
+    transition: transform 0.2s, background 0.3s;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+  }
+
+  button:hover {
+    transform: scale(1.05);
+  }
+
+  button:active {
+    transform: scale(0.95);
+  }
+
+  #send {
+    background: var(--success);
+    color: #fff;
+  }
+
+  #voice {
+    background: var(--user);
+    color: #fff;
+  }  #thinking {
+    font-style: italic;
+    color: #666;
+    padding: 6px 10px;
+    border-radius: 10px;
+    background: var(--bot);
+    display: inline-block;
+    animation: pulse 1.5s infinite;
+  }
+
+  @keyframes pulse {
+    0% { opacity: 0.6; }
+    50% { opacity: 1; }
+    100% { opacity: 0.6; }
+  }
+
+  .typing-indicator {
+    display: flex;
+    gap: 4px;
+    padding: 10px 16px;
+    background: var(--bot);
+    border-radius: 18px;
+    align-self: flex-start;
+    max-width: 60px;
+  }
+
+  .typing-dot {
+    width: 8px;
+    height: 8px;
+    border-radius: 50%;
+    background: var(--typing);
+    animation: typingAnimation 1.4s infinite ease-in-out;
+  }
+
+  .typing-dot:nth-child(1) { animation-delay: -0.32s; }
+  .typing-dot:nth-child(2) { animation-delay: -0.16s; }
+
+  @keyframes typingAnimation {
+    0%, 80%, 100% { transform: scale(0.8); opacity: 0.5; }
+    40% { transform: scale(1); opacity: 1; }
+  }
+
+  .small-note {
+    font-size: 12px;
+    color: #666;
+    margin-top: 4px;
+    text-align: center;
+    padding: 0 12px 8px;
+  }
+
+  .feedback-buttons {
+    display: flex;
+    gap: 8px;
+    margin-top: 8px;
+    justify-content: flex-end;
+  }
+
+  .feedback-btn {
+    background: transparent;
+    border: 1px solid #ddd;
+    border-radius: 12px;
+    padding: 4px 8px;
+    font-size: 12px;
+    color: #666;
+  }
+
+  .feedback-btn:hover {
+    background: #f0f0f0;
+    transform: none;
+  }
+
+  .suggestion-chips {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
+    margin-top: 8px;
+  }
+
+  .suggestion-chip {
+    background: var(--bot);
+    border: 1px solid #ddd;
+    border-radius: 16px;
+    padding: 6px 12px;
+    font-size: 13px;
+    cursor: pointer;
+    transition: background 0.2s;
+  }
+
+  .suggestion-chip:hover {
+    background: #e9ecef;
+  }
+
+  .message-actions {
+    display: flex;
+    gap: 8px;
+    margin-top: 8px;
+    opacity: 0;
+    transition: opacity 0.3s;
+  }
+
+  .msg:hover .message-actions {
+    opacity: 1;
+  }
+
+  .action-btn {
+    background: transparent;
+    border: none;
+    color: #666;
+    padding: 4px;
+    font-size: 12px;
+    border-radius: 4px;
+  }
+
+  .action-btn:hover {
+    background: rgba(0,0,0,0.1);
+  }
+
+  .error-msg {
+    background: #ffeaea;
+    color: #d63031;
+    border: 1px solid #ff7675;
+  }
+
+  .success-msg {
+    background: #e8f6ef;
+    color: #27ae60;
+    border: 1px solid #58d68d;
+  }
+
+  /* মোবাইল রেস্পন্সিভ */
+  @media (max-width: 768px) {
+    .msg {
+      max-width: 90%;
+    }
+    
+    header {
+      font-size: 18px;
+      padding: 12px;
+    }
+    
+    .header-controls button {
+      padding: 5px 8px;
+      font-size: 12px;
+    }
+  }
+
+  /* স্ক্রলবার স্টাইল */
+  #chat::-webkit-scrollbar {
+    width: 6px;
+  }
+
+  #chat::-webkit-scrollbar-track {
+    background: transparent;
+  }
+
+  #chat::-webkit-scrollbar-thumb {
+    background: #c1c1c1;
+    border-radius: 3px;
+  }
+
+  #chat::-webkit-scrollbar-thumb:hover {
+    background: #a8a8a8;
+  }
+</style>
+</head>
+<body>
+<header>
+  <span>MC Chat bot Pro</span>
+  <div class="header-controls">
+    <button class="clear-chat" title="Clear chat">🗑️</button>
+    <button class="theme-toggle" title="Toggle theme">🌙</button>
+  </div>
+</header>
+
+<div id="chat" role="log" aria-live="polite"></div>
+
+<div id="bar">
+  <input id="text" type="text" placeholder="এখানে টাইপ করুন..." aria-label="Message input" />
+  <button id="voice" title="Voice input">🎙️</button>
+  <button id="send" title="Send message">➤</button>
+</div>
+<div class="small-note">ভয়েস: বললেই কাজ করবে (ইংরেজি)। উত্তর সব বাংলা হবে।</div><script>
+/*
+MC Chat bot Pro — উন্নত ক্লায়েন্ট-সাইড ইমপ্লিমেন্টেশন
+নতুন ফিচার:
+- ডার্ক/লাইট মোড টগল
+- টাইপিং ইন্ডিকেটর
+- চ্যাট ক্লিয়ার ফিচার
+- মেসেজ টাইমস্ট্যাম্প
+- ফিডব্যাক সিস্টেম
+- সাজেশন চিপস
+- মেসেজ অ্যাকশন (কপি, শেয়ার)
+- উন্নত এরর হ্যান্ডলিং
+- লোকাল স্টোরেজে চ্যাট সেভ
+- পারফরম্যান্স অপ্টিমাইজেশন
+*/
+
+// DOM elements
+const chat = document.getElementById('chat');
+const text = document.getElementById('text');
+const sendBtn = document.getElementById('send');
+const voiceBtn = document.getElementById('voice');
+const themeToggle = document.querySelector('.theme-toggle');
+const clearChatBtn = document.querySelector('.clear-chat');
+
+// State management
+let followUpTopic = null;
+let lastWikiTitle = null;
+let isProcessing = false;
+let chatHistory = [];
+
+// Theme management
+function initTheme() {
+  const savedTheme = localStorage.getItem('chatbot-theme') || 
+    (window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light');
+  document.body.setAttribute('data-theme', savedTheme);
+  updateThemeButton(savedTheme);
+}
+
+function toggleTheme() {
+  const currentTheme = document.body.getAttribute('data-theme');
+  const newTheme = currentTheme === 'light' ? 'dark' : 'light';
+  document.body.setAttribute('data-theme', newTheme);
+  localStorage.setItem('chatbot-theme', newTheme);
+  updateThemeButton(newTheme);
+}
+
+function updateThemeButton(theme) {
+  themeToggle.textContent = theme === 'light' ? '🌙' : '☀️';
+}
+
+// Load chat history from localStorage
+function loadChatHistory() {
+  try {
+    const saved = localStorage.getItem('chatbot-history');
+    if (saved) {
+      chatHistory = JSON.parse(saved);
+      renderChatHistory();
+    }
+  } catch (e) {
+    console.error('Failed to load chat history:', e);
+  }
+}
+
+// Save chat to localStorage
+function saveChatToLocal() {
+  try {
+    localStorage.setItem('chatbot-history', JSON.stringify(chatHistory));
+  } catch (e) {
+    console.error('Failed to save chat history:', e);
+  }
+}
+
+// Render chat history
+function renderChatHistory() {
+  chat.innerHTML = '';
+  chatHistory.forEach(msg => {
+    appendMessage(msg.text, msg.type, msg.timestamp, false);
+  });
+  scrollToBottom();
+}
+
+// Clear chat function
+function clearChat() {
+  if (confirm('আপনি কি নিশ্চিত যে আপনি সমস্ত চ্যাট ইতিহাস মুছে ফেলতে চান?')) {
+    chat.innerHTML = '';
+    chatHistory = [];
+    localStorage.removeItem('chatbot-history');
+    appendMessage('চ্যাট ইতিহাস মুছে ফেলা হয়েছে। কীভাবে আমি আপনাকে সাহায্য করতে পারি?', 'bot');
+  }
+}
+
+// Helper: format timestamp
+function getCurrentTime() {
+  const now = new Date();
+  return now.toLocaleTimeString('bn-BD', { 
+    hour: '2-digit', 
+    minute: '2-digit',
+    hour12: false 
+  });
+}
+
+// Helper: append message with animation
+function appendMessage(textContent, who, timestamp = null, saveToHistory = true) {
+  const d = document.createElement('div');
+  d.className = `msg ${who}`;
+  
+  const messageId = 'msg-' + Date.now();
+  d.id = messageId;
+  
+  // Add message content
+  const contentDiv = document.createElement('div');
+  contentDiv.textContent = textContent;
+  d.appendChild(contentDiv);
+  
+  // Add timestamp
+  const timeDiv = document.createElement('div');
+  timeDiv.className = 'msg-time';
+  timeDiv.textContent = timestamp || getCurrentTime();
+  d.appendChild(timeDiv);
+  
+  // Add message actions for user messages
+  if (who === 'user') {
+    const actionsDiv = document.createElement('div');
+    actionsDiv.className = 'message-actions';
+    
+    const copyBtn = document.createElement('button');
+    copyBtn.className = 'action-btn';
+    copyBtn.textContent = 'কপি';
+    copyBtn.title = 'কপি করুন';
+    copyBtn.onclick = () => copyToClipboard(textContent);
+    
+    actionsDiv.appendChild(copyBtn);
+    d.appendChild(actionsDiv);
+  }
+  
+  // Add feedback buttons for bot messages
+  if (who === 'bot' && !textContent.includes('MC is thinking')) {
+    const feedbackDiv = document.createElement('div');
+    feedbackDiv.className = 'feedback-buttons';
+    
+    const helpfulBtn = document.createElement('button');
+    helpfulBtn.className = 'feedback-btn';
+    helpfulBtn.textContent = 'সহায়ক 👍';
+    helpfulBtn.onclick = () => handleFeedback(messageId, 'helpful');
+    
+    const notHelpfulBtn = document.createElement('button');
+    notHelpfulBtn.className = 'feedback-btn';
+    notHelpfulBtn.textContent = 'সহায়ক নয় 👎';
+    notHelpfulBtn.onclick = () => handleFeedback(messageId, 'not_helpful');
+    
+    feedbackDiv.appendChild(helpfulBtn);
+    feedbackDiv.appendChild(notHelpfulBtn);
+    d.appendChild(feedbackDiv);
+  }
+  
+  chat.appendChild(d);
+  
+  // Save to history if needed
+  if (saveToHistory) {
+    chatHistory.push({
+      text: textContent,
+      type: who,
+      timestamp: timestamp || getCurrentTime()
+    });
+    saveChatToLocal();
+  }
+  
+  scrollToBottom();
+  return d;
+}
+
+// Copy to clipboard function
+function copyToClipboard(text) {
+  navigator.clipboard.writeText(text).then(() => {
+    // Show temporary success message
+    const originalColor = text.style.color;
+    text.style.color = 'green';
+    setTimeout(() => {
+      text.style.color = originalColor;
+    }, 1000);
+  }).catch(err => {
+    console.error('Failed to copy: ', err);
+  });
+}
+
+// Handle user feedback
+function handleFeedback(messageId, type) {
+  const messageElement = document.getElementById(messageId);
+  if (messageElement) {
+    const feedbackDiv = messageElement.querySelector('.feedback-buttons');
+    if (feedbackDiv) {
+      feedbackDiv.innerHTML = type === 'helpful' 
+        ? '<span style="color:green; font-size:12px;">ধন্যবাদ! 👍</span>' 
+        : '<span style="color:red; font-size:12px;">মন্তব্যের জন্য ধন্যবাদ 👎</span>';
+      
+      // Save feedback to localStorage
+      try {
+        const feedbacks = JSON.parse(localStorage.getItem('chatbot-feedbacks') || '[]');
+        feedbacks.push({
+          messageId,
+          type,
+          timestamp: Date.now()
+        });
+        localStorage.setItem('chatbot-feedbacks', JSON.stringify(feedbacks));
+      } catch (e) {
+        console.error('Failed to save feedback:', e);
+      }
+    }
+  }
+}
+
+// Scroll to bottom of chat
+function scrollToBottom() {
+  chat.scrollTop = chat.scrollHeight;
+}
+
+// Show typing indicator
+function showTypingIndicator() {
+  const indicator = document.createElement('div');
+  indicator.className = 'typing-indicator';
+  indicator.id = 'typing-indicator';
+  
+  for (let i = 0; i < 3; i++) {
+    const dot = document.createElement('div');
+    dot.className = 'typing-dot';
+    indicator.appendChild(dot);
+  }
+  
+  chat.appendChild(indicator);
+  scrollToBottom();
+  return indicator;
+}
+
+// Hide typing indicator
+function hideTypingIndicator() {
+  const indicator = document.getElementById('typing-indicator');
+  if (indicator) {
+    indicator.remove();
+  }
+}
+
+// Show thinking message
+function showThinking() {
+  const thinking = document.createElement('div');
+  thinking.className = 'msg bot';
+  thinking.id = 'thinking';
+  thinking.textContent = 'MC is thinking...';
+  chat.appendChild(thinking);
+  scrollToBottom();
+  return thinking;
+}
+
+// Show suggestion chips
+function showSuggestions(suggestions) {
+  const suggestionDiv = document.createElement('div');
+  suggestionDiv.className = 'suggestion-chips';
+  
+  suggestions.forEach(suggestion => {
+    const chip = document.createElement('div');
+    chip.className = 'suggestion-chip';
+    chip.textContent = suggestion;
+    chip.onclick = () => {
+      handleSuggestionClick(suggestion);
+    };
+    suggestionDiv.appendChild(chip);
+  });
+  
+  chat.appendChild(suggestionDiv);
+  scrollToBottom();
+}
+
+// Handle suggestion clicks with proper responses
+function handleSuggestionClick(suggestion) {
+  const responses = {
+    'গণিত সমস্যা': 'গণিতের সমস্যা সমাধানের জন্য আপনি নিচের যেকোনো ফরম্যাটে লিখতে পারেন:\n\n• ২+২\n• ৫০*৩/২\n• (১০+৫)*২\n• ২৫% অফ ২০০\n\nআপনি কোন গণিতের সমস্যা সমাধান করতে চান?',
+    'বাংলাদেশ সম্পর্কে': 'বাংলাদেশ দক্ষিণ এশিয়ার একটি উন্নয়নশীল দেশ। রাজধানী ঢাকা, মুদ্রা টাকা, এবং রাষ্ট্রভাষা বাংলা। বাংলাদেশের জনসংখ্যা প্রায় ১৭ কোটি। এটি বিশ্বের সবচেয়ে ঘনবসতিপূর্ণ দেশগুলোর মধ্যে একটি। প্রধান নদীগুলো হলো পদ্মা, মেঘনা, এবং যমুনা।',
+    'বিজ্ঞান': 'বিজ্ঞান হলো প্রাকৃতিক বিশ্বের গঠন ও আচরণ সম্পর্কিত জ্ঞানের একটি পদ্ধতিগত উদ্যোগ। প্রধান শাখাগুলোর মধ্যে রয়েছে:\n\n• পদার্থবিদ্যা\n• রসায়ন\n• জীববিজ্ঞান\n• জ্যোতির্বিদ্যা\n• ভূবিজ্ঞান\n\nআপনি কোন বিষয়ে জানতে চান?',
+    'ইতিহাস': 'ইতিহাস হলো অতীত ঘটনাবলির অধ্যয়ন। বাংলাদেশের ইতিহাস সমৃদ্ধ, যার মধ্যে রয়েছে:\n\n• প্রাচীন বঙ্গ রাজ্য\n• মুঘল শাসন\n• ব্রিটিশ殖民\n• ভাষা আন্দোলন ১৯৫২\n• মুক্তিযুদ্ধ ১৯৭১\n\nআপনি কোন সময়কাল সম্পর্কে জানতে চান?',
+    'প্রযুক্তি': 'প্রযুক্তি হলো বৈজ্ঞানিক জ্ঞানের ব্যবহারিক প্রয়োগ। আধুনিক প্রযুক্তির মধ্যে রয়েছে:\n\n• কৃত্রিম বুদ্ধিমত্তা (AI)\n• মেশিন লার্নিং\n• ব্লকচেইন\n• ক্লাউড কম্পিউটিং\n• IoT (ইন্টারনেট অফ থিংস)\n\nকোন প্রযুক্তি সম্পর্কে জানতে চান?',
+    'সাহায্য প্রয়োজন': 'আমি আপনাকে কীভাবে সাহায্য করতে পারি?\n\nআপনি আমাকে জিজ্ঞাসা করতে পারেন:\n• গণিতের সমস্যা সমাধান\n• বিভিন্ন বিষয়ে তথ্য\n• ইংরেজি থেকে বাংলা অনুবাদ\n• ভয়েস ইনপুটের মাধ্যমে প্রশ্ন\n\nশুধু টাইপ করুন বা ভয়েস বাটন চাপুন!',
+    'অন্য বিষয়ে জানতে চান': 'আপনি নিচের বিষয়গুলো সম্পর্কে জানতে পারেন:\n\n• বিজ্ঞান ও প্রযুক্তি\n• ইতিহাস ও সংস্কৃতি\n• গণিত ও যুক্তি\n• ভূগোল ও পরিবেশ\n• সাহিত্য ও শিল্প\n\nকোন বিষয়ে আগ্রহী?'
+  };
+
+  // Show user's selection
+  appendMessage(suggestion, 'user');
+  
+  showTypingIndicator();
+  
+  setTimeout(() => {
+    hideTypingIndicator();
+    
+    if (responses[suggestion]) {
+      appendMessage(responses[suggestion], 'bot');
+    } else {
+      appendMessage('আপনার প্রশ্নটি সম্পর্কে আরও তথ্য দিতে চাই। দয়া করে বিস্তারিত বলুন।', 'bot');
+    }
+  }, 800);
+}// Safe math evaluator
+function tryMathEval(input) {
+  // বাংলা সংখ্যা ইংরেজিতে রূপান্তর
+  const normalizedInput = input.replace(/[০-৯]/g, d => '০১২৩৪৫৬৭৮৯'.indexOf(d));
+  
+  // বাংলা গাণিতিক অপারেটর রূপান্তর
+  const bengaliToEnglish = {
+    'জড়': '+', 'যোগ': '+', 'প্লাস': '+',
+    'বিয়োগ': '-', 'মাইনাস': '-',
+    'গুণ': '*', 'into': '*', 'into': '*',
+    'ভাগ': '/', 'by': '/',
+    'শতাংশ': '%', 'percent': '%',
+    'ঘাত': '**', 'power': '**'
+  };
+  
+  let expr = normalizedInput.toLowerCase();
+  Object.keys(bengaliToEnglish).forEach(key => {
+    expr = expr.replace(new RegExp(key, 'g'), bengaliToEnglish[key]);
+  });
+  
+  // Allow digits, spaces, parentheses, + - * / % . ^ 
+  const safe = expr.replace(/[^0-9+\-*/(). %^]/g, '');
+  if (!/[\d]/.test(safe)) return null;
+  
+  const finalExpr = safe.replace(/\^/g, '**').replace(/%/g, '/100');
+  
+  // Final safety check
+  if (!/^[0-9+\-*/().\s%*^]+$/.test(finalExpr)) return null;
+  
+  try {
+    const result = Function('"use strict"; return (' + finalExpr + ');')();
+    if (result === undefined || !isFinite(result)) return null;
+    return String(result);
+  } catch (e) {
+    return null;
+  }
+}
+
+// Wikipedia summary fetch (bn first, en fallback)
+async function fetchWikiSummary(title) {
+  // Try Bengali REST summary
+  const bnUrl = 'https://bn.wikipedia.org/api/rest_v1/page/summary/' + encodeURIComponent(title);
+  try {
+    const r1 = await fetch(bnUrl);
+    if (r1.ok) {
+      const j = await r1.json();
+      if (j.extract) return { title: j.title, extract: j.extract, lang: 'bn' };
+    }
+  } catch (e) { }
+  
+  // Fallback English
+  const enUrl = 'https://en.wikipedia.org/api/rest_v1/page/summary/' + encodeURIComponent(title);
+  try {
+    const r2 = await fetch(enUrl);
+    if (r2.ok) {
+      const j2 = await r2.json();
+      if (j2.extract) return { title: j2.title, extract: j2.extract, lang: 'en' };
+    }
+  } catch (e) { }
+  
+  return null;
+}
+
+// Wikipedia deep extract using MediaWiki API
+async function fetchWikiDeep(title) {
+  const url = 'https://en.wikipedia.org/w/api.php?action=query&prop=extracts&explaintext&format=json&titles=' + 
+    encodeURIComponent(title) + '&origin=*';
+  try {
+    const r = await fetch(url);
+    if (!r.ok) return null;
+    const j = await r.json();
+    const pages = j.query && j.query.pages;
+    if (!pages) return null;
+    const p = Object.values(pages)[0];
+    if (p && p.extract) return p.extract;
+    return null;
+  } catch (e) { return null; }
+}
+
+// Translate English->Bengali via MyMemory API
+async function translateToBengali(text) {
+  try {
+    const url = 'https://api.mymemory.translated.net/get?q=' + encodeURIComponent(text) + '&langpair=en|bn';
+    const r = await fetch(url);
+    if (!r.ok) return null;
+    const j = await r.json();
+    if (j && j.responseData && j.responseData.translatedText) {
+      return j.responseData.translatedText;
+    }
+    return null;
+  } catch (e) { return null; }
+}
+
+// Main bot logic
+async function handleUser(raw) {
+  if (isProcessing) return;
+  
+  const userText = raw.trim();
+  if (!userText) return;
+
+  // Show user's message
+  appendMessage(userText, 'user');
+  isProcessing = true;
+
+  // Check math first
+  const mathResult = tryMathEval(userText);
+  if (mathResult !== null) {
+    showTypingIndicator();
+    await new Promise(r => setTimeout(r, 800));
+    hideTypingIndicator();
+    appendMessage('গণিতের উত্তর: ' + mathResult, 'bot');
+    isProcessing = false;
+    return;
+  }
+
+  // Lowercase analyze
+  const lc = userText.toLowerCase();
+
+  // Casual greetings (Bangla / Banglish / English)
+  const greetings = ['hi', 'hello', 'hey', 'হাই', 'হ্যালো', 'হেই', 'নমস্কার', 'সালাম'];
+  for (const g of greetings) {
+    if (lc.includes(g)) {
+      showTypingIndicator();
+      await new Promise(r => setTimeout(r, 600));
+      hideTypingIndicator();
+      appendMessage('হ্যালো! আমি কেমনভাবে সাহায্য করতে পারি?', 'bot');
+      
+      // Show suggestions after greeting
+      setTimeout(() => {
+        showSuggestions(['গণিত সমস্যা', 'বাংলাদেশ সম্পর্কে', 'বিজ্ঞান', 'ইতিহাস']);
+      }, 300);
+      
+      isProcessing = false;
+      return;
+    }
+  }
+
+  // Personal Q check
+  const personalKeys = [
+    {
+      k: ['who made you', 'who is your creator', 'who created you', 'কে তৈরি করেছে', 'তোমাকে কে তৈরি করেছে', 'কে তোমাকে তৈরি করেছে'],
+      ans: 'আমাকে Abir তৈরি করেছেন।'
+    },
+    {
+      k: ['what is your name', 'তোমার নাম কি', 'তumar naam ki', 'tomar naam ki', 'তumi ke', 'তোমার পরিচয় কি'],
+      ans: 'আমার নাম MC Chat bot Pro। আমি একটি উন্নত চ্যাটবট।'
+    },
+    {
+      k: ['how are you', 'কেমন আছ', 'কেমন আছো', 'কি অবস্থা'],
+      ans: 'আমি ভালো আছি, ধন্যবাদ! আপনি কেমন আছেন?'
+    }
+  ];
+  
+  for (const pk of personalKeys) {
+    for (const patt of pk.k) {
+      if (lc.includes(patt)) {
+        showTypingIndicator();
+        await new Promise(r => setTimeout(r, 500));
+        hideTypingIndicator();
+        appendMessage(pk.ans, 'bot');
+        isProcessing = false;
+        return;
+      }
+    }
+  }
+
+  // If user answers yes/no as follow-up
+  if (followUpTopic) {
+    if (lc === 'yes' || lc === 'y' || lc.includes('yes') || lc.includes('হ্যাঁ') || lc.includes('হ্যা') || lc.includes('জি')) {
+      showTypingIndicator();
+      const deepEn = await fetchWikiDeep(followUpTopic);
+      let finalText = null;
+      
+      if (deepEn) {
+        const tr = await translateToBengali(deepEn.slice(0, 3000));
+        finalText = tr || deepEn;
+      } else {
+        finalText = 'দুঃখিত, বিস্তারিত তথ্য পাওয়া যায়নি।';
+      }
+      
+      await new Promise(r => setTimeout(r, 800));
+      hideTypingIndicator();
+      appendMessage(finalText, 'bot');
+      followUpTopic = null;
+      isProcessing = false;
+      return;
+    }
+    
+    if (lc === 'no' || lc === 'n' || lc.includes('no') || lc.includes('না')) {
+      showTypingIndicator();
+      await new Promise(r => setTimeout(r, 400));
+      hideTypingIndicator();
+      appendMessage('ঠিক আছে। অন্য কিছু জানতে চাও?', 'bot');
+      followUpTopic = null;
+      isProcessing = false;
+      return;
+    }
+  }
+
+  // Otherwise, try Wikipedia summary
+  showTypingIndicator();
+  const wiki = await fetchWikiSummary(userText);
+  await new Promise(r => setTimeout(r, 800));
+  hideTypingIndicator();
+
+  if (wiki) {
+    let out = wiki.extract;
+    
+    // If page is English, translate to Bengali
+    if (wiki.lang === 'en') {
+      const tr = await translateToBengali(out.slice(0, 2000));
+      if (tr) out = tr;
+    }
+    
+    appendMessage(out, 'bot');
+    
+    // Set followUpTopic for deep follow-up
+    followUpTopic = wiki.title;
+    
+    // Ask for follow up in Bengali
+    appendMessage('আরও জানতে চাও? (হ্যাঁ/না)', 'bot');
+    isProcessing = false;
+    return;
+  }
+
+  // Fallback: couldn't find wiki
+  showTypingIndicator();
+  await new Promise(r => setTimeout(r, 500));
+  hideTypingIndicator();
+  
+  appendMessage('দুঃখিত, সঠিক তথ্য এখনো পাচ্ছি না। কিছু ভিন্নভাবে লিখে বলো বা আরও বিশদ জানাও।', 'bot');
+  
+  // Show suggestions for fallback
+  setTimeout(() => {
+    showSuggestions(['গণিত সমস্যা দিন', 'অন্য বিষয়ে জানতে চান', 'সাহায্য প্রয়োজন']);
+  }, 300);
+  
+  isProcessing = false;
+}
+
+// Send button handler
+sendBtn.onclick = () => {
+  const v = text.value.trim();
+  if (!v) return;
+  text.value = '';
+  text.focus();
+  handleUser(v);
+};
+
+// Enter key handler
+text.addEventListener('keypress', (e) => {
+  if (e.key === 'Enter') sendBtn.click();
+});
+
+// Voice recognition setup
+let recog;
+let isListening = false;
+
+if ('webkitSpeechRecognition' in window || 'SpeechRecognition' in window) {
+  recog = new (window.SpeechRecognition || window.webkitSpeechRecognition)();
+  recog.lang = 'en-US';
+  recog.interimResults = false;
+  recog.continuous = false;
+
+  recog.onstart = () => {
+    isListening = true;
+    voiceBtn.textContent = '🔴';
+    voiceBtn.style.background = 'var(--error)';
+  };
+  
+  recog.onend = () => {
+    isListening = false;
+    voiceBtn.textContent = '🎙️';
+    voiceBtn.style.background = '';
+  };
+  
+  recog.onerror = (ev) => {
+    isListening = false;
+    voiceBtn.textContent = '🎙️';
+    voiceBtn.style.background = '';
+    appendMessage('ভয়েস সিস্টেমে সমস্যা হয়েছে: ' + (ev.error || ''), 'bot');
+  };
+
+  recog.onresult = (ev) => {
+    const spoken = ev.results[0][0].transcript;
+    text.value = spoken;
+    sendBtn.click();
+  };
+
+  voiceBtn.onclick = () => {
+    if (!isListening) {
+      try {
+        recog.start();
+      } catch (e) {
+        appendMessage('ভয়েস রিকগনিশন শুরু করতে সমস্যা হচ্ছে।', 'bot');
+      }
+    } else {
+      try {
+        recog.stop();
+      } catch (e) { }
+    }
+  };
+} else {
+  voiceBtn.disabled = true;
+  voiceBtn.textContent = '🎙️';
+  voiceBtn.title = 'Voice not supported';
+}
+
+// Theme toggle
+themeToggle.onclick = toggleTheme;
+
+// Clear chat
+clearChatBtn.onclick = clearChat;
+
+// Initialization
+window.addEventListener('load', () => {
+  initTheme();
+  loadChatHistory();
+  
+  // Show welcome message if no history
+  if (chatHistory.length === 0) {
+    setTimeout(() => {
+      appendMessage('হ্যালো! আমি MC Chat bot Pro — কীভাবে সাহায্য করতে পারি?', 'bot');
+      
+      // Show initial suggestions
+      setTimeout(() => {
+        showSuggestions(['গণিত সমস্যা', 'বাংলাদেশ সম্পর্কে', 'বিজ্ঞান', 'ইতিহাস', 'প্রযুক্তি']);
+      }, 500);
+    }, 300);
+  }
+});
+
+// Auto-resize textarea (if we change to textarea in future)
+text.addEventListener('input', function() {
+  this.style.height = 'auto';
+  this.style.height = (this.scrollHeight) + 'px';
+});
+</script>
+</body>
+</html>

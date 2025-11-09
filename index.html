@@ -4,6 +4,14 @@
 <meta charset="utf-8" />
 <meta name="viewport" content="width=device-width,initial-scale=1" />
 <title>MC Chat bot Pro</title>
+
+<!-- Privacy-friendly analytics by Plausible -->
+<script async src="https://plausible.io/js/pa-Hc72Oa8RdPOaWOr5luL2b.js"></script>
+<script>
+  window.plausible=window.plausible||function(){(plausible.q=plausible.q||[]).push(arguments)},plausible.init=plausible.init||function(i){plausible.o=i||{}};
+  plausible.init()
+</script>
+
 <style>
   :root {
     --bg: #f6f7fb;
@@ -173,20 +181,7 @@
   button:hover {
     transform: scale(1.05);
   }
-
-  button:active {
-    transform: scale(0.95);
-  }
-
-  #send {
-    background: var(--success);
-    color: #fff;
-  }
-
-  #voice {
-    background: var(--user);
-    color: #fff;
-  }  #thinking {
+  #thinking {
     font-style: italic;
     color: #666;
     padding: 6px 10px;
@@ -367,7 +362,20 @@
   <button id="voice" title="Voice input">🎙️</button>
   <button id="send" title="Send message">➤</button>
 </div>
-<div class="small-note">ভয়েস: বললেই কাজ করবে (ইংরেজি)। উত্তর সব বাংলা হবে।</div><script>
+<div class="small-note">ভয়েস: বললেই কাজ করবে (ইংরেজি)। উত্তর সব বাংলা হবে।</div>
+  button:active {
+    transform: scale(0.95);
+  }
+
+  #send {
+    background: var(--success);
+    color: #fff;
+  }
+
+  #voice {
+    background: var(--user);
+    color: #fff;
+  }<script>
 /*
 MC Chat bot Pro — উন্নত ক্লায়েন্ট-সাইড ইমপ্লিমেন্টেশন
 নতুন ফিচার:
